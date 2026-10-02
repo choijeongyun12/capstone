@@ -28,8 +28,6 @@ CARLA + ROS2 환경에서, 전방 차량의 끼어들기(Cut-in) 및 급제동 �
 
 인지(Perception) → 판단(Decision) → 제어(Control)로 구성된 모듈러 아키텍처입니다.
 
-![System Architecture](docs/images/system-architecture.png)
-
 | 모듈 | 구성 | 역할 |
 | --- | --- | --- |
 | **Perception** | UFLD v2(차선 인식), YOLO v8(객체 인식) | 센서 데이터 전처리 및 융합 |
@@ -41,6 +39,8 @@ CARLA + ROS2 환경에서, 전방 차량의 끼어들기(Cut-in) 및 급제동 �
 | Middleware | Linux 기반 ROS2 Galactic |
 | Simulator | CARLA Simulator (Town06_opt Map) |
 | Scenario Tool | CARLA Scenario Runner (Cut-in 시나리오 구현) |
+
+![CARLA Town06_opt Map](docs/images/carla-map.jpg)
 
 ---
 
@@ -68,7 +68,11 @@ TTC = Distance / Relative Velocity
 
 Euro NCAP CCRB(Car-to-Car Rear Braking) 시나리오를 참고해 구성했습니다.
 
-![Scenario Setup](docs/images/scenario-setup.jpg)
+![Euro NCAP CCRB test protocol reference](docs/images/euro-ncap-ccrb-reference.png)
+
+*참고: Euro NCAP AEB 시험 프로토콜의 CCRb(Car-to-Car Rear braking) 시나리오 및 속도 기준표*
+
+![Ego 차량 시점 (가운데가 Ego 차량)](docs/images/scenario-ego-view.png)
 
 - **Ego 차량**(흰색): 50.4 km/h 정속 주행
 - **Target 차량**(빨간색): 전방 20 m 지점에서 끼어든 뒤 급제동
