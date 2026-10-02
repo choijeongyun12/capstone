@@ -60,7 +60,7 @@ TTC = Distance / Relative Velocity
 
 A simplified version of the decision logic is shown in the flowchart below (checked in order: anything unusual ahead → vehicle present behind → same lane occupied → brake / change lane).
 
-![Decision Flowchart](docs/images/decision-flowchart.png)
+<img src="docs/images/decision-flowchart.png" width="360" alt="Decision Flowchart" />
 
 ---
 
