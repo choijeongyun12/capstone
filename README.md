@@ -28,6 +28,8 @@ CARLA + ROS2 환경에서, 전방 차량의 끼어들기(Cut-in) 및 급제동 �
 
 인지(Perception) → 판단(Decision) → 제어(Control)로 구성된 모듈러 아키텍처입니다.
 
+![System Architecture](docs/images/system-architecture.png)
+
 | 모듈 | 구성 | 역할 |
 | --- | --- | --- |
 | **Perception** | UFLD v2(차선 인식), YOLO v8(객체 인식) | 센서 데이터 전처리 및 융합 |
@@ -56,15 +58,25 @@ TTC = Distance / Relative Velocity
 | 전방 TTC < 2.0s, 후방 TTC < 1.5s | 복합 위험 | 능동 회피 기동 |
 | 전방 TTC > 3.0s | 정상 주행 | 속도 유지 (ACC) |
 
+판단 로직을 단순화하면 아래 순서도와 같습니다 (전방 특이사항 → 후방 차량 유무 → 같은 차선 점유 여부 순으로 확인해 제동/차선 변경을 결정).
+
+![Decision Flowchart](docs/images/decision-flowchart.png)
+
 ---
 
 ## 실험 시나리오 및 검증 방법
 
 Euro NCAP CCRB(Car-to-Car Rear Braking) 시나리오를 참고해 구성했습니다.
 
+![Scenario Setup](docs/images/scenario-setup.jpg)
+
 - **Ego 차량**(흰색): 50.4 km/h 정속 주행
 - **Target 차량**(빨간색): 전방 20 m 지점에서 끼어든 뒤 급제동
 - **Rear 차량**(검정색, 최대 2대): 60.4 km/h, 차간거리 12~24 m로 좌/우/동일 차선에 랜덤 생성되어 Ego 차량 후방에서 접근
+
+CARLA 상에서 전·후방 카메라 뷰와 실시간 판단 지표(충돌률, 평균 최소 TTC 등)를 함께 모니터링하며 검증했습니다.
+
+![CARLA Live Demo](docs/images/carla-live-demo.png)
 
 아래 세 조건을 각 100회씩 반복 실험했습니다.
 
@@ -80,8 +92,16 @@ Euro NCAP CCRB(Car-to-Car Rear Braking) 시나리오를 참고해 구성했습�
 
 ## 프로젝트 수행 결과
 
-- **충돌률**: 제안 알고리즘 12% vs 단순 제동 대비 76.5% 감소, 단순 회피 대비 42.9% 감소
-- **평균 TTC**: 단순 제동 대비 2.08배, 단순 회피 대비 2.36배 향상
+<p float="left">
+  <img src="docs/images/result-collision-rate.png" width="48%" alt="Collision Rate Comparison" />
+  <img src="docs/images/result-ttc-comparison.png" width="48%" alt="Typical Combined Minimum TTC" />
+</p>
+
+- **충돌률**: 제안 알고리즘 12% vs 단순 제동(51%) 대비 76.5% 감소, 단순 회피(21%) 대비 42.9% 감소
+- **평균 TTC**: 제안 알고리즘 4.81s로 단순 제동(2.31s) 대비 2.08배, 단순 회피(2.04s) 대비 2.36배 향상
+
+![Worst 20 Trials by Combined Minimum TTC](docs/images/result-worst20-ttc.png)
+
 - **Worst 20 시나리오**: 가장 위험한 상위 20개 사례에서도 제안 알고리즘은 전 구간 TTC 0.5s 기준선을 상회(충돌 회피)한 반면, 단순 제동은 전 구간에서 0.5s 미만으로 상시 충돌 위험 상태
 
 세 가지 지표 모두에서 제안 알고리즘이 개선된 성능을 보였으며, 후방 추돌 위험을 효과적으로 회피했습니다.
