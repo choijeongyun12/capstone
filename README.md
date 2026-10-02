@@ -1,64 +1,64 @@
-# 차량 유사시 행동상태 알고리즘 개발
+# Vehicle Emergency Behavior-State Algorithm Development
 
-국민대학교 미래자동차 다학제간 캡스톤 디자인 프로젝트 (팀명: Tmo)
+Kookmin University Future Mobility Multidisciplinary Capstone Design Project (Team: Tmo)
 
-CARLA + ROS2 환경에서, 전방 차량의 끼어들기(Cut-in) 및 급제동 상황과 후방 차량의 접근을 동시에 고려해 최적의 회피 기동을 선택하는 자율주행 유사시 판단 알고리즘을 설계·검증합니다.
-
----
-
-## 프로젝트 배경
-
-기존 ADAS/ACC 시스템은 전방 위험만을 기준으로 긴급 제동(AEB)을 수행할 뿐, 후방 차량과의 충돌 가능성은 고려하지 않습니다. NHTSA 보고서에 따르면 후방추돌은 전체 교통사고의 약 29%를 차지하는 가장 빈번한 사고 유형이며, 사고 관련 운전자의 47%가 선행 차량 제동 감지 후 약 2초 이내에 반응하지 못합니다. 또한 ACC 사용 중 고속도로 사고는 최근 6년간 573% 증가했습니다.
-
-기존 양산 시스템(KIA-FCA, Subaru-eyesight AES 등)이 가진 한계는 다음과 같습니다.
-
-- 긴급 제동 시 후방 차량과의 충돌을 고려하지 않음
-- 끼어들기 상황에 대한 능동적 회피 로직 부재
-- 전·후방 위험을 통합적으로 판단하는 의사결정 로직 부재 (후방 차량이 있을 때의 급제동은 오히려 위험할 수 있음)
+In CARLA + ROS2, this project designs and validates an autonomous-driving emergency decision algorithm that selects the optimal avoidance maneuver by simultaneously considering a cut-in / hard-braking situation ahead and an approaching vehicle behind.
 
 ---
 
-## 프로젝트 목표
+## Background
 
-전·후방 위험을 동시에 고려하여 단순 제동과 회피 기동 중 최적의 행동을 선택하는 지능형 유사시 상황 판단 알고리즘을 개발하고, CARLA 시뮬레이션 기반의 정량적 지표(충돌률, 최소 TTC)로 실효성을 검증합니다.
+Existing ADAS/ACC systems perform emergency braking (AEB) based solely on front-side risk, without considering the possibility of a collision with a vehicle behind. According to an NHTSA report, rear-end collisions account for about 29% of all traffic accidents — the most frequent accident type — and 47% of drivers involved fail to react within about 2 seconds of detecting the lead vehicle's braking. Highway accidents during ACC use have also increased 573% over the past six years.
+
+Existing production systems (KIA-FCA, Subaru-eyesight AES, etc.) share the following limitations:
+
+- They don't consider a collision with a rear vehicle during emergency braking
+- They lack active avoidance logic for cut-in situations
+- They lack decision logic that integrates front and rear risk (hard braking when a rear vehicle is present can itself be dangerous)
 
 ---
 
-## 시스템 아키텍처
+## Goal
 
-인지(Perception) → 판단(Decision) → 제어(Control)로 구성된 모듈러 아키텍처입니다.
+Develop an intelligent emergency decision algorithm that considers front and rear risk simultaneously to choose the optimal action between simple braking and an avoidance maneuver, and validate its effectiveness using quantitative CARLA-simulation metrics (collision rate, minimum TTC).
 
-| 모듈 | 구성 | 역할 |
+---
+
+## System Architecture
+
+A modular architecture composed of Perception → Decision → Control.
+
+| Module | Components | Role |
 | --- | --- | --- |
-| **Perception** | UFLD v2(차선 인식), YOLO v8(객체 인식) | 센서 데이터 전처리 및 융합 |
-| **Decision** | TTC 기반 위험 상황 평가 | 점수제 기반 최적 행동 선택, 비상 경로(Emergency Trajectory) 생성 |
-| **Control** | PID 제어 | 조향/가감속, 차량 동역학 모델 반영 |
+| **Perception** | UFLD v2 (lane detection), YOLO v8 (object detection) | Sensor data preprocessing and fusion |
+| **Decision** | TTC-based risk assessment | Score-based optimal action selection, Emergency Trajectory generation |
+| **Control** | PID control | Steering / acceleration-deceleration, reflects vehicle dynamics model |
 
-| 구분 | 상세 구성 |
+| Category | Configuration |
 | --- | --- |
-| Middleware | Linux 기반 ROS2 Galactic |
+| Middleware | ROS2 Galactic on Linux |
 | Simulator | CARLA Simulator (Town06_opt Map) |
-| Scenario Tool | CARLA Scenario Runner (Cut-in 시나리오 구현) |
+| Scenario Tool | CARLA Scenario Runner (Cut-in scenario implementation) |
 
 ![CARLA Town06_opt Map](docs/images/carla-map.jpg)
 
 ---
 
-## 유사시 판단 알고리즘
+## Emergency Decision Algorithm
 
-전·후방 위험도를 TTC(Time To Collision)로 정량화한 뒤, 아래 매트릭스에 따라 최적 행동을 결정합니다. 최종적으로 인접 차선의 점유 상태를 확인해 좌/우 회피 가능 여부를 판단합니다.
+Front and rear risk are quantified as TTC (Time To Collision), and the optimal action is determined using the matrix below. The final step checks whether the adjacent lane is occupied to determine whether a left/right avoidance maneuver is possible.
 
 ```
 TTC = Distance / Relative Velocity
 ```
 
-| 상황 조건 | 판단 결과 | 수행 동작 |
+| Condition | Judgment | Action |
 | --- | --- | --- |
-| 전방 TTC < 2.0s, 후방 안전 | 전방 위험 | 긴급 제동 (AEB) |
-| 전방 TTC < 2.0s, 후방 TTC < 1.5s | 복합 위험 | 능동 회피 기동 |
-| 전방 TTC > 3.0s | 정상 주행 | 속도 유지 (ACC) |
+| Front TTC < 2.0s, rear safe | Front risk | Emergency braking (AEB) |
+| Front TTC < 2.0s, rear TTC < 1.5s | Combined risk | Active avoidance maneuver |
+| Front TTC > 3.0s | Normal driving | Maintain speed (ACC) |
 
-판단 로직을 단순화하면 아래 순서도와 같습니다 (전방 특이사항 → 후방 차량 유무 → 같은 차선 점유 여부 순으로 확인해 제동/차선 변경을 결정).
+A simplified version of the decision logic is shown in the flowchart below (checked in order: anything unusual ahead → vehicle present behind → same lane occupied → brake / change lane).
 
 ![Decision Flowchart](docs/images/decision-flowchart.png)
 
@@ -94,45 +94,45 @@ Evaluation metrics: Collision Rate, Minimum TTC (Min TTC), Average Deceleration 
 
 ---
 
-## 프로젝트 수행 결과
+## Results
 
 <p float="left">
   <img src="docs/images/result-collision-rate.png" width="48%" alt="Collision Rate Comparison" />
   <img src="docs/images/result-ttc-comparison.png" width="48%" alt="Typical Combined Minimum TTC" />
 </p>
 
-- **충돌률**: 제안 알고리즘 12% vs 단순 제동(51%) 대비 76.5% 감소, 단순 회피(21%) 대비 42.9% 감소
-- **평균 TTC**: 제안 알고리즘 4.81s로 단순 제동(2.31s) 대비 2.08배, 단순 회피(2.04s) 대비 2.36배 향상
+- **Collision rate**: the proposed algorithm reached 12%, a 76.5% reduction versus Brake-only (51%) and a 42.9% reduction versus Forced Avoidance (21%)
+- **Average TTC**: the proposed algorithm reached 4.81s, 2.08× Brake-only (2.31s) and 2.36× Forced Avoidance (2.04s)
 
 ![Worst 20 Trials by Combined Minimum TTC](docs/images/result-worst20-ttc.png)
 
-- **Worst 20 시나리오**: 가장 위험한 상위 20개 사례에서도 제안 알고리즘은 전 구간 TTC 0.5s 기준선을 상회(충돌 회피)한 반면, 단순 제동은 전 구간에서 0.5s 미만으로 상시 충돌 위험 상태
+- **Worst 20 scenarios**: even in the 20 most dangerous cases, the proposed algorithm stayed above the 0.5s TTC threshold throughout (avoiding collision), while Brake-only stayed below 0.5s throughout — a constant collision-risk state
 
-세 가지 지표 모두에서 제안 알고리즘이 개선된 성능을 보였으며, 후방 추돌 위험을 효과적으로 회피했습니다.
-
----
-
-## 기대효과 및 향후 과제
-
-- ADAS 시스템 고도화: 양산차 AEB에 후방 상황 인지·능동 회피 로직을 결합해 지능형 안전 보조 장치로 발전
-- 특수 상황 대응: 후방에서 고속 접근하는 긴급차량에 대한 능동적 양보/회피 시스템으로 확장 가능
-- 향후 과제: 더 다양한 유사시 시나리오 검증, 시뮬레이션을 넘어선 실차 환경 검증 필요
+The proposed algorithm showed improved performance across all three metrics and effectively avoided rear-end collision risk.
 
 ---
 
-## 레포지토리 구성
+## Expected Impact and Future Work
 
-`src/carla_agent` — CARLA 환경에서 전·후방 통합 위험 판단 및 회피 기동을 수행하는 ROS2 패키지
+- ADAS upgrade: combining rear-situation awareness and active-avoidance logic with production-vehicle AEB to evolve it into an intelligent safety-assist system
+- Special-situation response: extendable to an active yielding/avoidance system for a fast-approaching emergency vehicle from the rear
+- Future work: validating a wider range of emergency scenarios, and validation in a real-vehicle environment beyond simulation
 
-- `carla_agent/autopilot_node.py` — TTC 기반 전·후방 위험 평가 및 긴급 제동/회피 기동 판단
-- `carla_agent/vehicle_spawner.py` — CARLA 내 Ego/Target/Rear 차량 스폰
-- `carla_agent/object_detector.py` — YOLO 기반 객체 인식
-- `carla_agent/lane_detect.py`, `lane_follower.py` — UFLD v2 기반 차선 인식 및 차선 추종
-- `carla_agent/spectator_follower.py` — CARLA 관전 시점(spectator) 추종
-- `carla_agent/visualizer.py` — 주행/위험 평가 시각화
-- `launch/carla_agent.launch.py` — ROS2 런치 설정
+---
 
-## 빌드
+## Repository Structure
+
+`src/carla_agent` — a ROS2 package that performs integrated front/rear risk judgment and avoidance maneuvers in the CARLA environment
+
+- `carla_agent/autopilot_node.py` — TTC-based front/rear risk assessment and emergency-braking/avoidance-maneuver decision
+- `carla_agent/vehicle_spawner.py` — spawns the Ego/Target/Rear vehicles in CARLA
+- `carla_agent/object_detector.py` — YOLO-based object detection
+- `carla_agent/lane_detect.py`, `lane_follower.py` — UFLD v2-based lane detection and lane following
+- `carla_agent/spectator_follower.py` — follows the CARLA spectator viewpoint
+- `carla_agent/visualizer.py` — visualizes driving/risk assessment
+- `launch/carla_agent.launch.py` — ROS2 launch configuration
+
+## Build
 
 ```bash
 source /opt/ros/galactic/setup.bash
@@ -140,12 +140,12 @@ colcon build --packages-select carla_agent
 source install/setup.bash
 ```
 
-빌드 산출물은 버전 관리에서 제외됩니다.
+Build artifacts are excluded from version control.
 
 ---
 
 ## Contributors
 
-- **조윤진** (팀장) — 전체 시스템 통합, CARLA 시뮬레이션 환경 구축
-- **원대호** (팀원) — YOLO 객체 인식, 긴급 상황 시나리오 설계
-- **최정윤** (팀원) — UFLD v2 차선 인식, PID 제어 구현
+- **Yoonjin Cho** (Team Lead) — overall system integration, CARLA simulation environment setup
+- **Daeho Won** (Member) — YOLO object detection, emergency scenario design
+- **Jeongyun Choi** (Member) — UFLD v2 lane detection, PID control implementation
