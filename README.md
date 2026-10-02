@@ -72,7 +72,7 @@ The test scenario is based on the Euro NCAP CCRB (Car-to-Car Rear Braking) proto
 
 *Reference: CCRb (Car-to-Car Rear braking) scenario and speed criteria from the Euro NCAP AEB test protocol*
 
-![Ego vehicle view (the circled vehicle is the Ego vehicle)](docs/images/scenario-ego-view.png)
+<img src="docs/images/scenario-ego-view.png" width="320" alt="Ego vehicle view (the circled vehicle is the Ego vehicle)" />
 
 - **Ego vehicle** (the vehicle marked with the red circle): drives at a constant 50.4 km/h
 - **Target vehicle** (the vehicle ahead of the Ego vehicle): cuts in 20 m ahead, then brakes suddenly
