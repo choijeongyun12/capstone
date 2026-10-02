@@ -64,33 +64,33 @@ TTC = Distance / Relative Velocity
 
 ---
 
-## 실험 시나리오 및 검증 방법
+## Experimental Scenarios and Validation Method
 
-Euro NCAP CCRB(Car-to-Car Rear Braking) 시나리오를 참고해 구성했습니다.
+The test scenario is based on the Euro NCAP CCRB (Car-to-Car Rear Braking) protocol.
 
 ![Euro NCAP CCRB test protocol reference](docs/images/euro-ncap-ccrb-reference.png)
 
-*참고: Euro NCAP AEB 시험 프로토콜의 CCRb(Car-to-Car Rear braking) 시나리오 및 속도 기준표*
+*Reference: CCRb (Car-to-Car Rear braking) scenario and speed criteria from the Euro NCAP AEB test protocol*
 
-![Ego 차량 시점 (가운데가 Ego 차량)](docs/images/scenario-ego-view.png)
+![Ego vehicle view (the circled vehicle is the Ego vehicle)](docs/images/scenario-ego-view.png)
 
-- **Ego 차량**(흰색): 50.4 km/h 정속 주행
-- **Target 차량**(빨간색): 전방 20 m 지점에서 끼어든 뒤 급제동
-- **Rear 차량**(검정색, 최대 2대): 60.4 km/h, 차간거리 12~24 m로 좌/우/동일 차선에 랜덤 생성되어 Ego 차량 후방에서 접근
+- **Ego vehicle** (the vehicle marked with the red circle): drives at a constant 50.4 km/h
+- **Target vehicle** (the vehicle ahead of the Ego vehicle): cuts in 20 m ahead, then brakes suddenly
+- **Rear vehicle(s)** (the vehicle(s) behind the Ego vehicle, up to 2): drive at 60.4 km/h, spawned randomly 12–24 m behind in the left/right/same lane, approaching the Ego vehicle from the rear
 
-CARLA 상에서 전·후방 카메라 뷰와 실시간 판단 지표(충돌률, 평균 최소 TTC 등)를 함께 모니터링하며 검증했습니다.
+Validation was performed in CARLA while monitoring both front/rear camera views and real-time decision metrics (collision rate, average minimum TTC, etc.).
 
 ![CARLA Live Demo](docs/images/carla-live-demo.png)
 
-아래 세 조건을 각 100회씩 반복 실험했습니다.
+The following three conditions were each tested over 100 trials.
 
-| 비교군 | 행동 방식 |
+| Comparison Group | Behavior |
 | --- | --- |
-| 비교군 1 (단순 정지) | Brake-only |
-| 비교군 2 (단순 회피) | 좌/우 차선 변경(Forced Avoidance) |
-| 제안 알고리즘 | 후방을 고려한 주행 선택(Full Algorithm) |
+| Baseline 1 (Brake-only) | Brake-only |
+| Baseline 2 (Forced Avoidance) | Lane change left/right (Forced Avoidance) |
+| Proposed Algorithm | Driving decision that accounts for the rear (Full Algorithm) |
 
-평가 지표: 충돌률(Collision Rate), 최소 TTC(Min TTC), 평균 감속도(Avg Deceleration)
+Evaluation metrics: Collision Rate, Minimum TTC (Min TTC), Average Deceleration (Avg Deceleration)
 
 ---
 
