@@ -146,6 +146,6 @@ Build artifacts are excluded from version control.
 
 ## Contributors
 
-- **Yoonjin Cho** (Team Lead) — overall system integration, CARLA simulation environment setup
-- **Daeho Won** (Member) — YOLO object detection, emergency scenario design
-- **Jeongyun Choi** (Member) — UFLD v2 lane detection, PID control implementation
+- **[Yoonjin Cho](https://github.com/gerrard088)** (Team Lead) — overall system integration, CARLA simulation environment setup
+- **[Daeho Won](https://github.com/1daymore)** (Member) — YOLO object detection, emergency scenario design
+- **[Jeongyun Choi](https://github.com/choijeongyun12)** (Member) — UFLD v2 lane detection, PID control implementation
