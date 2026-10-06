@@ -82,6 +82,10 @@ Validation was performed in CARLA while monitoring both front/rear camera views 
 
 ![CARLA Live Demo](docs/images/carla-live-demo.png)
 
+| Scenario 1 | Scenario 2 |
+| --- | --- |
+| <img src="docs/videos/scenario-1.gif" alt="Scenario 1 demo in CARLA" /> | <img src="docs/videos/scenario-2.gif" alt="Scenario 2 demo in CARLA" /> |
+
 The following three conditions were each tested over 100 trials.
 
 | Comparison Group | Behavior |
